@@ -1,5 +1,5 @@
 """
-Basic agentic search: a Pydantic AI agent with three tools (list_files, grep, read_file).
+Basic Agentic RAG: a Pydantic AI agent with three tools (list_files, grep, read_file).
 The agent picks tools to call iteratively until it has enough context to answer.
 No vector database, no embeddings, no chunking. Just an LLM that knows how to grep.
 

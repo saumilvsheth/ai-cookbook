@@ -1,12 +1,12 @@
-# Agentic Search vs Semantic RAG
+# Agentic RAG vs. Semantic RAG
 
 For the past few years, whenever we wanted to give an LLM extra context, the default answer was RAG. In practice, that usually meant semantic search: chunk the source material, embed it, store it in a vector database, retrieve the most relevant chunks, and place those chunks in the prompt.
 
-**That pattern is still useful, but it is no longer the only default.** A newer pattern is agentic search where you give the model tools that let it search the source files directly, decide what to read next, follow clues across documents, and answer only when it has enough evidence.
+**That pattern is still useful, but it is no longer the only default.** A newer pattern is Agentic RAG where you give the model tools that let it search the source files directly, decide what to read next, follow clues across documents, and answer only when it has enough evidence.
 
-Most developers have seen this shift inside coding agents like Cursor, Claude Code, and Codex. **The bigger opportunity is applying the same idea outside coding tools.** When engineers build AI automations and knowledge systems, they often still reach for semantic RAG by default. This tutorial shows how to apply agentic search to your own projects using plain Python.
+Most developers have seen this shift inside coding agents like Cursor, Claude Code, and Codex. **The bigger opportunity is applying the same idea outside coding tools.** When engineers build AI automations and knowledge systems, they often still reach for Semantic RAG by default. This tutorial shows how to apply Agentic RAG to your own projects using plain Python.
 
-This tutorial compares the two approaches, then builds an agentic search system in Python with three tools over markdown notes: `list_files`, `grep`, and `read_file`.
+This tutorial compares Agentic RAG and Semantic RAG, then builds an Agentic RAG system in Python with three tools over markdown notes: `list_files`, `grep`, and `read_file`.
 
 ## Table of contents
 
@@ -17,7 +17,7 @@ This tutorial compares the two approaches, then builds an agentic search system 
 5. [`5-structured-output.py`](./5-structured-output.py). A structured answer with citations.
 6. [`6-production.py`](./6-production.py). The same tool interface with safer production defaults.
 
-Background docs live in [`docs/`](./docs/): start with [`docs/rag-vs-agentic.md`](./docs/rag-vs-agentic.md), then use [`docs/python-patterns.md`](./docs/python-patterns.md) as a Python reference while reading the code.
+Background docs live in [`docs/`](./docs/): start with [`docs/agentic-rag-vs-semantic-rag.md`](./docs/agentic-rag-vs-semantic-rag.md), then use [`docs/python-patterns.md`](./docs/python-patterns.md) as a Python reference while reading the code.
 
 ## The loop
 
@@ -66,7 +66,7 @@ The version in [`6-production.py`](./6-production.py) encodes a small set of pat
 
 ### What this tutorial does not cover
 
-The agentic search loop is one layer of a real agent harness. A full production setup adds more around it: token and dollar budget caps, sub-agents for context isolation, automatic context compaction when the window fills, `PreToolUse` and `PostToolUse` hooks, permission modes for sensitive actions, OS-level sandboxing (containers, gVisor, Firecracker), state persistence across sessions (the Ralph loop pattern), and a separate evaluator agent that grades work against testable criteria.
+The Agentic RAG loop is one layer of a real agent harness. A full production setup adds more around it: token and dollar budget caps, sub-agents for context isolation, automatic context compaction when the window fills, `PreToolUse` and `PostToolUse` hooks, permission modes for sensitive actions, OS-level sandboxing (containers, gVisor, Firecracker), state persistence across sessions (the Ralph loop pattern), and a separate evaluator agent that grades work against testable criteria.
 
 For that layer, see [Anthropic's harness design post](https://www.anthropic.com/engineering/harness-design-long-running-apps), [LangChain's anatomy of an agent harness](https://blog.langchain.com/the-anatomy-of-an-agent-harness/), and the [wasnotwas grep-across-agents comparison](https://wasnotwas.com/writing/grep-across-agents/).
 
@@ -137,4 +137,4 @@ Yes, but object storage is not a filesystem with built-in grep. For small collec
 
 ### Can I use files other than markdown?
 
-Yes. The agentic search loop only needs searchable text and stable citations. Plain text, JSON, YAML, logs, code, and CSV files can be searched directly. For PDF, DOCX, HTML, or slides, add an extraction step that converts the file to text first, then search that extracted text and cite the original file. Tools like [Docling](https://github.com/docling-project/docling) or [Markitdown](https://github.com/microsoft/markitdown/tree/main) are commonly used for this kind of text extraction.
+Yes. The Agentic RAG loop only needs searchable text and stable citations. Plain text, JSON, YAML, logs, code, and CSV files can be searched directly. For PDF, DOCX, HTML, or slides, add an extraction step that converts the file to text first, then search that extracted text and cite the original file. Tools like [Docling](https://github.com/docling-project/docling) or [Markitdown](https://github.com/microsoft/markitdown/tree/main) are commonly used for this kind of text extraction.

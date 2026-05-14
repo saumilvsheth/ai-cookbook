@@ -98,3 +98,23 @@ Yes. [`BAAI/bge-reranker-v2-m3`](https://huggingface.co/BAAI/bge-reranker-v2-m3)
 ### Can I chunk longer documents than FiQA posts?
 
 FiQA forum posts are short (median ~100 words, all under the 8,191-token embedding input cap), so chunking is a no-op here. For longer documents like help center articles or PDF pages, a reasonable starting point is a semantic splitter with a chunk size around 512 tokens and ~10-20% overlap. Tune from there based on your corpus; chunking is workload-dependent and there is no universal best value.
+
+## Apply this to your own project
+
+The mechanics generalize. Replace FiQA with your help center, internal wiki, sales playbook, support tickets, regulatory filings, whatever your corpus is. The pipeline does not change. Walk through these steps in order.
+
+1. **Define and collect your corpus.** Figure out what set of documents the retrieval needs to cover. Pull them out of whatever system they live in (Notion, Zendesk, S3, a database) and write them to a single file or folder. Keep a stable `_id` per document, you will need it everywhere.
+
+2. **Decide whether to chunk.** Look at the document length distribution. Chunking is **required** when a single document exceeds the embedding model's max input (8,191 tokens for `text-embedding-3-small`, ~6,000 words of English). It is **also worth doing** even within the limit when documents are long enough that a single vector cannot meaningfully summarize them, typically anything over ~1,000 tokens. If your docs are short like FiQA posts or short tickets, skip chunking entirely. If you do chunk, use a **semantic splitter** that respects sentence and paragraph boundaries (libraries like `semantic-text-splitter` or LangChain's `RecursiveCharacterTextSplitter`) rather than a naive fixed-size split that cuts mid-sentence. A reasonable starting point is ~512 tokens with 10-20% overlap, then tune.
+
+3. **Pick an embedding model.** `text-embedding-3-small` is the sensible default (see the rationale in the section above). Consider `text-embedding-3-large` if your corpus is multilingual or technical jargon-heavy and the cost is fine. Consider a local model like `BAAI/bge-large-en-v1.5` if you can't ship API calls.
+
+4. **Build the BM25 index.** Tokenize the corpus once, build the index with `bm25s`, persist it to disk. This is [`2-bm25.py`](./2-bm25.py) with your text instead of FiQA's.
+
+5. **Embed and store.** Embed the corpus once with the model from step 3, save the resulting matrix. For small to medium corpora (under ~5M chunks), a numpy `.npy` file is faster and simpler than any vector database. Above that, or if you need multi-tenant filtering and updates, swap in Qdrant, LanceDB, or pgvector. The retrieval pattern does not change.
+
+6. **Wire up retrieval.** Copy the helper modules in [`utils/`](./utils/) into your project as a starting point. `BM25Retriever`, `DenseRetriever`, `reciprocal_rank_fusion`, and `rerank_with_cohere` are all you need to recreate the four-stage pipeline. Wrap them in a `search_hybrid(query, k=10)` function that fetches `candidate_k=50` from each retriever, fuses with RRF, reranks the top 50, and returns the top 10.
+
+7. **Build an evaluation set on your own data.** Without ground truth, you cannot tell whether your pipeline is good or which knob actually moves the needle. The cheapest path is to **let an LLM generate queries against your real documents**, then evaluate every retrieval variant against that synthetic eval set. The relative ordering between methods stays meaningful even though absolute NDCG numbers will not match BEIR baselines. Recipe in [`docs/build-your-own-eval.md`](./docs/build-your-own-eval.md).
+
+Once steps 1 to 6 are wired up and step 7 gives you a feedback loop, the rest is iteration. Swap an embedding model, change chunk size, tune `candidate_k`, try a different reranker, and watch NDCG@10 move. That's the whole job.

@@ -1,4 +1,4 @@
-# How NDCG@10 measures retrieval quality
+# Normalized Discounted Cumulative Gain at 10 (NDCG@10)
 
 You can't say one retriever is better than another by squinting at example queries. You need a metric that rewards putting relevant docs near the top and penalizes putting them near the bottom. **NDCG@10** is the metric the entire IR community has settled on. This doc is the minimum mental model you need to read [`6-evaluate.py`](../6-evaluate.py).
 

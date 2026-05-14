@@ -48,30 +48,7 @@ The four-stage pipeline looks like overkill until you watch each stage fail on i
 
 **Hybrid (RRF)** captures both wins. Cursor's public A/B testing on code retrieval found that adding semantic search alongside grep gives roughly +12.5% accuracy on code Q&A, varying from +6.5% to +23.5% by model ([Cursor: improving semantic search](https://cursor.com/blog/semsearch)). The combination is what production teams ship.
 
-**The reranker** is the boring multiplier. A cross-encoder sees the query and document jointly, so it can reason about "does this passage actually support this claim?" in a way that two independent embeddings cannot. Two-stage retrieval (vector search then a reranker) lifts Recall@5 from around 0.69 to 0.82, a ~17% jump that propagates into every downstream LLM call.
-## The numbers
-
-After you run [`6-evaluate.py`](./6-evaluate.py) on the FiQA test set, you should see NDCG@10 roughly like this (50 query sample, your numbers will vary slightly):
-
-| Method | NDCG@10 |
-| --- | --- |
-| BM25 only | ~0.24 |
-| Dense only (text-embedding-3-small) | ~0.31 |
-| Hybrid (RRF) | ~0.35 |
-| Hybrid + Cohere `rerank-v4.0-fast` | ~0.40 |
-
-These line up with the published BEIR leaderboard ([beir-cellar/beir leaderboard](https://github.com/beir-cellar/beir/wiki/Leaderboard)) within a couple of points. **The spread between BM25 and reranked hybrid is much bigger than on simpler benchmarks**, which is the point: on paraphrase-heavy questions (what real users send), each stage of the pipeline pays for itself. The 50 query sample exists because Cohere's free trial tier caps rerank calls at 10 per minute; set `RERANK_SAMPLE_SIZE = None` in `6-evaluate.py` to run all 648.
-
-## When to reach for this vs. the alternatives
-
-| You're searching... | Reach for | Why |
-| --- | --- | --- |
-| Code, runbooks, anything where the agent should follow references | Agentic RAG ([`knowledge/agentic-rag`](../agentic-rag/)) | Exact symbols, freshness, multi-hop by chasing files |
-| Long-form prose where queries paraphrase the docs | This tutorial | Hybrid + rerank is the 2026 baseline |
-| Broad "what are the recurring themes across this corpus" questions | GraphRAG | Community summaries are built for global queries |
-| "Show me documents similar to this one" | Pure dense embeddings | Vector similarity is the whole point |
-
-**The next thing on top of this stack is an agent that decides when to use it.** Most real systems route easy factoid queries to one-shot retrieval and reserve the agentic loop for multi-hop questions, because the agentic loop costs 3 to 10x more tokens per query ([RAGSearch benchmark, arXiv 2604.09666](https://arxiv.org/html/2604.09666v1)). That's a separate tutorial.
+**The reranker** is the boring multiplier. A cross-encoder sees the query and document jointly, so it can reason about "does this passage actually support this claim?" in a way that two independent embeddings cannot. 
 
 ## Setup
 

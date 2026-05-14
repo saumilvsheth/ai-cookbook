@@ -106,18 +106,6 @@ Pull the top 50 candidates from each retriever, fuse, return the top 10. The `ca
 - Very small candidate pools. If you only fuse top-5 from each retriever, the rank signal is too coarse.
 - Multi-stage pipelines where you want a calibrated probability of relevance, not a ranking. RRF outputs are not probabilities.
 
-## Other fusion methods you'll see
-
-| Method                          | Idea                                                            | Trade-off                                                                       |
-| ------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| **CombSUM**                     | Sum of normalized scores across retrievers.                     | Needs per-retriever score normalization. Brittle when distributions shift.      |
-| **CombMNZ**                     | CombSUM times the number of retrievers that returned the doc.   | Rewards agreement explicitly. Still needs normalization.                        |
-| **Weighted score average**      | $\alpha \cdot s_{\text{bm25}} + (1-\alpha) \cdot s_{\text{dense}}$ | Best when you tune $\alpha$ on a held-out eval set. Worst out of the box.       |
-| **Learned-to-rank (LambdaMART, etc.)** | Train a model on labeled relevance judgments to combine signals. | Best ceiling. Needs training data, infra, and ongoing maintenance.              |
-| **Reciprocal Rank Fusion (RRF)** | $\sum 1 / (k + \text{rank})$.                                   | No tuning, no normalization, no labels. Strong default.                          |
-
-In practice, the typical retrieval stack is: RRF as the default, weighted score average if you have a labeled eval set, learned-to-rank only when none of the above is good enough.
-
 ## Further reading
 
 - Cormack, Clarke, & Büttcher, *Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods* (SIGIR 2009). The original paper that introduced RRF and tested it on TREC: [PDF](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf).
